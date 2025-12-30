@@ -58,7 +58,7 @@ export default function Home() {
           <div className="absolute top-20 right-20 w-72 h-72 bg-[#D4AF37] rounded-full blur-3xl"></div>
           <div className="absolute bottom-20 left-20 w-96 h-96 bg-[#D4AF37] rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="relative max-w-7xl mx-auto px-6 py-32">
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <div>
@@ -66,16 +66,16 @@ export default function Home() {
                 <Sparkles className="w-4 h-4 text-[#D4AF37]" />
                 <span className="text-sm text-[#D4AF37] font-medium">منصة التعليم الأدبي الأولى</span>
               </div>
-              
+
               <h1 className="text-5xl md:text-6xl font-black mb-6 leading-tight">
                 رحلتك الأدبية
                 <span className="block text-[#D4AF37]">تبدأ هنا</span>
               </h1>
-              
+
               <p className="text-xl text-gray-300 mb-8 leading-relaxed">
                 تعلم الكتابة الإبداعية، الرواية، الشعر، والمقالة من خبراء متخصصين. احصل على إرشاد شخصي وطوّر موهبتك الأدبية.
               </p>
-              
+
               <div className="flex flex-wrap gap-4">
                 <Link to={createPageUrl("Courses")}>
                   <Button size="lg" className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white text-lg px-8 py-6 shadow-2xl shadow-[#D4AF37]/20">
@@ -84,19 +84,22 @@ export default function Home() {
                   </Button>
                 </Link>
                 <Link to={createPageUrl("Mentorship")}>
-                  <Button size="lg" variant="outline" className="text-lg px-8 py-6 border-2 border-white/30 hover:bg-white/10 backdrop-blur-sm">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="text-lg px-8 py-6 bg-gradient-to-r from-[#F9FAFB] to-[#E5E7EB] hover:from-[#E5E7EB] hover:to-[#F9FAFB] text-[#1A1A1A] border border-gray-200 shadow-sm shadow-gray-300/10 hover:shadow-md">
                     <BookMarked className="ml-2 w-5 h-5" />
                     الإرشاد الأدبي
                   </Button>
                 </Link>
               </div>
             </div>
-            
+
             <div className="hidden md:block">
               <div className="relative">
                 <div className="absolute inset-0 bg-[#D4AF37]/20 rounded-3xl blur-2xl"></div>
-                <img 
-                  src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&q=80" 
+                <img
+                  src="https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=800&q=80"
                   alt="كتب"
                   className="relative rounded-3xl shadow-2xl w-full object-cover h-[500px]"
                 />
@@ -133,7 +136,7 @@ export default function Home() {
             <h2 className="text-4xl font-black text-[#1A1A1A] mb-4">لماذا كتاب؟</h2>
             <p className="text-xl text-gray-600">منصة شاملة لتطوير مهاراتك الأدبية</p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {features.map((feature, index) => (
               <Card key={index} className="border-none shadow-lg hover:shadow-xl transition-all hover:-translate-y-1 bg-white">
@@ -156,7 +159,7 @@ export default function Home() {
           <div className="absolute top-10 right-10 w-64 h-64 bg-[#D4AF37] rounded-full blur-3xl"></div>
           <div className="absolute bottom-10 left-10 w-64 h-64 bg-[#D4AF37] rounded-full blur-3xl"></div>
         </div>
-        
+
         <div className="relative max-w-4xl mx-auto px-6 text-center">
           <h2 className="text-4xl md:text-5xl font-black mb-6">ابدأ رحلتك الأدبية اليوم</h2>
           <p className="text-xl text-gray-300 mb-8 leading-relaxed">

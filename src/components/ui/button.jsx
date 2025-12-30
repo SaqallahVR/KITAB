@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 
 const VARIANT_CLASSES = {
   default: "bg-[#D4AF37] text-white hover:bg-[#B8941F]",
-  outline: "border border-gray-300 bg-white text-[#1A1A1A] hover:bg-gray-50",
+  outline: "border border-gray-300 bg-white text-[#1A1A1A] hover:bg-white hover:shadow-md",
   ghost: "bg-transparent text-[#1A1A1A] hover:bg-gray-100",
 };
 
