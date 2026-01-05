@@ -65,6 +65,30 @@ export default function Lesson() {
   const isEnrolled = !!subscription;
   const canAccess = lesson?.is_free || course?.type === 'free' || isEnrolled;
 
+  const getVideoEmbed = (url) => {
+    if (!url) return null;
+    const trimmed = url.trim();
+    if (trimmed.includes("youtube.com/watch")) {
+      const id = new URL(trimmed).searchParams.get("v");
+      return id ? `https://www.youtube.com/embed/${id}` : trimmed;
+    }
+    if (trimmed.includes("youtu.be/")) {
+      const id = trimmed.split("youtu.be/")[1]?.split("?")[0];
+      return id ? `https://www.youtube.com/embed/${id}` : trimmed;
+    }
+    if (trimmed.includes("vimeo.com/")) {
+      const id = trimmed.split("vimeo.com/")[1]?.split("?")[0];
+      return id ? `https://player.vimeo.com/video/${id}` : trimmed;
+    }
+    return trimmed;
+  };
+
+  const isDirectVideo = (url) => {
+    return /\.(mp4|webm|ogg)(\?|#|$)/i.test(url);
+  };
+
+  const videoUrl = getVideoEmbed(lesson?.video_url);
+
   if (loadingLesson) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-white to-[#F5F1E8] py-12">
@@ -148,14 +172,23 @@ export default function Lesson() {
         {/* Video Player or Content */}
         <Card className="border-none shadow-xl mb-8">
           <CardContent className="p-0">
-            {lesson.type === 'video' && lesson.video_url ? (
+            {lesson.type === 'video' && videoUrl ? (
               <div className="relative bg-black rounded-lg overflow-hidden" style={{ paddingBottom: '56.25%' }}>
-                <iframe
-                  src={lesson.video_url}
-                  className="absolute inset-0 w-full h-full"
-                  allowFullScreen
-                  title={lesson.title}
-                />
+                {isDirectVideo(videoUrl) ? (
+                  <video
+                    className="absolute inset-0 w-full h-full"
+                    controls
+                    src={videoUrl}
+                  />
+                ) : (
+                  <iframe
+                    src={videoUrl}
+                    className="absolute inset-0 w-full h-full"
+                    allow="autoplay; encrypted-media"
+                    allowFullScreen
+                    title={lesson.title}
+                  />
+                )}
               </div>
             ) : (
               <div className="p-12 text-center bg-gradient-to-br from-[#F5F1E8] to-white">

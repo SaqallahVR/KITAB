@@ -99,10 +99,10 @@ export default function Profile() {
               <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] rounded-2xl flex items-center justify-center">
                 <User className="w-12 h-12 text-white" />
               </div>
-              <div className="flex-1">
-                <h1 className="text-4xl font-black mb-2">{user?.full_name}</h1>
+              <div className="flex-1 flex flex-col justify-center">
+                <h1 className="text-4xl font-black mb-1">{user?.full_name}</h1>
                 <p className="text-gray-300 text-lg">{user?.email}</p>
-                <div className="flex items-center gap-4 mt-4">
+                <div className="flex items-center gap-4 mt-3">
                   <Badge className="bg-[#D4AF37]/20 text-[#D4AF37] border-[#D4AF37]/30">
                     <GraduationCap className="w-4 h-4 ml-1" />
                     {subscriptions.length} دورة

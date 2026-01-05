@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { BookOpen, User, LogOut, GraduationCap, BookMarked } from "lucide-react";
 import { base44 } from "@/api/base44Client";
+import LoginModal from "@/components/auth/LoginModal";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,19 +16,32 @@ export default function Layout({ children }) {
   const location = useLocation();
   const [user, setUser] = React.useState(null);
   const [scrolled, setScrolled] = React.useState(false);
+  const [loginOpen, setLoginOpen] = React.useState(false);
+  const [returnTo, setReturnTo] = React.useState(null);
 
   React.useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
+    const refreshUser = () => base44.auth.me().then(setUser).catch(() => setUser(null));
+    refreshUser();
+
+    const handleLoginRequest = (event) => {
+      setReturnTo(event.detail?.returnTo || null);
+      setLoginOpen(true);
+    };
+
+    window.addEventListener("auth:login-request", handleLoginRequest);
 
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("auth:login-request", handleLoginRequest);
+    };
   }, []);
 
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    base44.auth.logout();
+    base44.auth.logout().finally(() => setUser(null));
   };
 
   return (
@@ -108,7 +122,7 @@ export default function Layout({ children }) {
               {user ? (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="gap-2 border-[#D4AF37] hover:bg-[#FAF9F6]">
+                    <Button className="gap-2 bg-[#D4AF37] text-white hover:bg-[#B8941F]">
                       <User className="w-4 h-4" />
                       <span>{user.full_name}</span>
                     </Button>
@@ -137,7 +151,7 @@ export default function Layout({ children }) {
                 </DropdownMenu>
               ) : (
                 <Button
-                  onClick={() => base44.auth.redirectToLogin()}
+                  onClick={() => setLoginOpen(true)}
                   className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white shadow-lg"
                 >
                   تسجيل الدخول
@@ -149,10 +163,18 @@ export default function Layout({ children }) {
       </header>
 
       <main className="pt-20">{children}</main>
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          base44.auth.me().then(setUser).catch(() => setUser(null));
+          if (returnTo) window.location.assign(returnTo);
+        }}
+      />
 
       <footer className="bg-[#1A1A1A] text-white mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-12">
-          <div className="grid md:grid-cols-3 gap-8 mb-8">
+        <div className="max-w-7xl mx-auto px-6 pt-8 pb-4">
+          <div className="grid md:grid-cols-3 gap-8 mb-4">
             <div>
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] rounded-lg flex items-center justify-center">
@@ -187,11 +209,38 @@ export default function Layout({ children }) {
             </div>
           </div>
 
-          <div className="border-t border-gray-800 pt-8 text-center text-gray-500">
-            <p>© 2024 كتاب. جميع الحقوق محفوظة</p>
-          </div>
+  
         </div>
       </footer>
+      <footer
+  className=""
+  style={{ background: "rgba(0, 0, 0, 0.78)" }}
+>
+  <div className="w-full px-6 py-3" dir="ltr">
+    <div className="flex items-center justify-center gap-2 flex-wrap">
+      <a
+        href="https://vr-house.net/"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="VR House website"
+        className="flex items-center"
+      >
+        <img
+          src="/VR-House_logo.png"
+          alt="VR House Logo"
+          className="h-[21.5px] w-auto object-contain"
+          style={{
+            filter: "drop-shadow(0 0 2px rgba(0,0,0,0.3))",
+          }}
+        />
+      </a>
+
+      <span className="text-white text-[10.5pt] leading-tight">
+        © 2025 VR House – All Rights Reserved
+      </span>
+    </div>
+  </div>
+</footer>
     </div>
   );
 }

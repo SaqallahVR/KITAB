@@ -183,11 +183,9 @@ export default function Courses() {
                     <span className="text-sm font-medium text-gray-700">{course.instructor}</span>
                   </div>
                   
-                  {course.type !== 'free' && (
-                    <div className="text-2xl font-black text-[#D4AF37]">
-                      {course.price} ر.س
-                    </div>
-                  )}
+                  <div className="text-2xl font-black text-[#D4AF37]">
+                    {course.type === "free" ? "0 ر.س" : `${course.price} ر.س`}
+                  </div>
                 </CardContent>
                 
                 <CardFooter>

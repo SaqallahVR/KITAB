@@ -138,7 +138,7 @@ export default function WriterProfile() {
                   <img 
                     src={writer.image_url} 
                     alt={writer.name}
-                    className="relative rounded-3xl shadow-2xl w-full h-[500px] object-cover"
+                    className="relative rounded-3xl shadow-2xl w-full h-[500px] object-cover object-top"
                   />
                 ) : (
                   <div className="relative bg-gradient-to-br from-[#D4AF37]/20 to-[#B8941F]/20 rounded-3xl h-[500px] flex items-center justify-center">
@@ -160,13 +160,13 @@ export default function WriterProfile() {
         <section className="py-12 bg-white border-b">
           <div className="max-w-7xl mx-auto px-6">
             <Card className="border-none shadow-lg bg-gradient-to-br from-[#F5F1E8] to-white">
-              <CardContent className="p-8">
-                <div className="flex items-start gap-4">
+              <CardContent className="p-8 pt-10">
+                <div className="flex items-start gap-5">
                   <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] rounded-xl flex items-center justify-center flex-shrink-0">
                     <Award className="w-6 h-6 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h3 className="text-2xl font-bold text-[#1A1A1A] mb-3">الإنجازات والجوائز</h3>
+                    <h3 className="text-2xl font-bold text-[#1A1A1A] mb-4">الإنجازات والجوائز</h3>
                     <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
                       {writer.achievements}
                     </p>

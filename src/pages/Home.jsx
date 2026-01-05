@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -7,6 +7,7 @@ import { ArrowLeft, BookOpen, Users, Video, Award, Star, GraduationCap, BookMark
 import { base44 } from "@/api/base44Client";
 
 export default function Home() {
+  const navigate = useNavigate();
   const [stats, setStats] = React.useState({
     courses: 0,
     writers: 0,
@@ -26,6 +27,15 @@ export default function Home() {
       });
     });
   }, []);
+
+  const handleStartNow = async () => {
+    const currentUser = await base44.auth.me().catch(() => null);
+    if (currentUser) {
+      navigate(createPageUrl("Courses"));
+      return;
+    }
+    base44.auth.redirectToLogin(createPageUrl("Courses"));
+  };
 
   const features = [
     {
@@ -87,7 +97,7 @@ export default function Home() {
                   <Button
                     size="lg"
                     variant="outline"
-                    className="text-lg px-8 py-6 bg-gradient-to-r from-[#F9FAFB] to-[#E5E7EB] hover:from-[#E5E7EB] hover:to-[#F9FAFB] text-[#1A1A1A] border border-gray-200 shadow-sm shadow-gray-300/10 hover:shadow-md">
+                    className="text-lg px-8 py-6 bg-gradient-to-r from-[#D1D5DB] to-[#E5E7EB] hover:from-[#E5E7EB] hover:to-[#D1D5DB] text-[#1A1A1A] border border-gray-200 shadow-sm shadow-gray-300/10 hover:shadow-md">
                     <BookMarked className="ml-2 w-5 h-5" />
                     الإرشاد الأدبي
                   </Button>
@@ -165,12 +175,14 @@ export default function Home() {
           <p className="text-xl text-gray-300 mb-8 leading-relaxed">
             انضم لآلاف الكتّاب والمبدعين وطوّر موهبتك مع أفضل المدربين والمرشدين
           </p>
-          <Link to={createPageUrl("Courses")}>
-            <Button size="lg" className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white text-lg px-10 py-6 shadow-2xl shadow-[#D4AF37]/20">
-              <ArrowLeft className="ml-2 w-5 h-5" />
-              ابدأ الآن مجاناً
-            </Button>
-          </Link>
+          <Button
+            size="lg"
+            onClick={handleStartNow}
+            className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white text-lg px-10 py-6 shadow-2xl shadow-[#D4AF37]/20"
+          >
+            <ArrowLeft className="ml-2 w-5 h-5" />
+            ابدأ الآن مجاناً
+          </Button>
         </div>
       </section>
     </div>

@@ -1,142 +1,26 @@
 // src/api/base44Client.js
 
-// Mock data (بديل مؤقت عن Django API)
-const MOCK_DB = {
-  Course: [
-  {
-    id: "c1",
-    published: true,
-    title: "أساسيات الكتابة الإبداعية",
-    description: "ابدأ من الصفر وتعلم بناء الفكرة والشخصيات والحبكة.",
-    type: "free", // free | paid | mixed
-    level: "beginner", // beginner | intermediate | advanced
-    duration: "3 ساعات",
-    instructor: "أ. نورة",
-    price: 0,
-    image_url: "",
-    created_date: "2025-12-01",
-  },
-  {
-    id: "c2",
-    published: true,
-    title: "تقنيات السرد وبناء الحبكة",
-    description: "كيف تبني حبكة قوية وتكتب مشاهد مؤثرة بدون ملل.",
-    type: "paid",
-    level: "intermediate",
-    duration: "6 ساعات",
-    instructor: "أ. خالد",
-    price: 149,
-    image_url: "",
-    created_date: "2025-12-10",
-  },
-  {
-    id: "c3",
-    published: true,
-    title: "تطوير الأسلوب واللغة",
-    description: "تمارين عملية لتطوير الأسلوب ورفع جودة النص.",
-    type: "mixed",
-    level: "advanced",
-    duration: "8 ساعات",
-    instructor: "أ. ريم",
-    price: 199,
-    image_url: "",
-    created_date: "2025-12-20",
-  },
-  ],
-  Writer: [
-    {
-      id: "w1",
-      name: "د. سارة",
-      active: true,
-      specialty: "الكتابة الإبداعية",
-      bio: "كاتبة وروائية بخبرة 10 سنوات.",
-      image_url: "",
-      email: "sara@ketab.com",
-      created_date: "2025-11-15",
-    },
-    {
-      id: "w2",
-      name: "أ. خالد",
-      active: true,
-      specialty: "تقنيات السرد",
-      bio: "مدرب كتابة ومحرر أدبي.",
-      image_url: "",
-      email: "khaled@ketab.com",
-      created_date: "2025-11-20",
-    },
-  ],
-  Subscription: [
-    {
-      id: "s1",
-      user_email: "student@example.com",
-      course_id: "c1",
-      status: "active",
-      created_date: "2025-12-12",
-    },
-    {
-      id: "s2",
-      user_email: "student2@example.com",
-      course_id: "c2",
-      status: "active",
-      created_date: "2025-12-18",
-    },
-  ],
-  Lesson: [
-    {
-      id: "l1",
-      course_id: "c1",
-      title: "مقدمة في الكتابة",
-      content: "محتوى الدرس الأول.",
-      order: 1,
-    },
-    {
-      id: "l2",
-      course_id: "c1",
-      title: "بناء الفكرة",
-      content: "محتوى الدرس الثاني.",
-      order: 2,
-    },
-  ],
-  MentorshipPackage: [
-    {
-      id: "p1",
-      writer_id: "w1",
-      name: "جلسة واحدة",
-      sessions_count: 1,
-      price: 200,
-      description: "جلسة إرشاد فردية لمدة ساعة.",
-    },
-    {
-      id: "p2",
-      writer_id: "w1",
-      name: "3 جلسات",
-      sessions_count: 3,
-      price: 500,
-      description: "3 جلسات إرشاد فردية.",
-    },
-  ],
-  AvailableSlot: [
-    {
-      id: "as1",
-      writer_id: "w1",
-      date: "2025-01-05",
-      time: "18:00",
-      is_available: true,
-    },
-    {
-      id: "as2",
-      writer_id: "w1",
-      date: "2025-01-06",
-      time: "20:00",
-      is_available: true,
-    },
-  ],
-  Booking: [],
-};
+const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:8000";
 
+function getCookie(name) {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp(`(^| )${name}=([^;]+)`));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+function resolveMediaUrl(url) {
+  if (!url) return "";
+  if (url.startsWith("http://") || url.startsWith("https://")) return url;
+  if (url.startsWith("/")) return `${API_BASE}${url}`;
+  return url;
+}
 // Helper: simple filter by object match { published: true }
 function matchesWhere(item, where = {}) {
-  return Object.entries(where).every(([k, v]) => item?.[k] === v);
+  return Object.entries(where).every(([k, v]) => {
+    const current = item?.[k];
+    if (current === undefined || current === null) return false;
+    return String(current) === String(v);
+  });
 }
 
 // Helper: sort by "-created_date" or "created_date"
@@ -155,50 +39,159 @@ function sortBy(list, sortKey) {
   });
 }
 
-function generateId(prefix) {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
+async function ensureCsrfToken() {
+  const existing = getCookie("csrftoken");
+  if (existing) return existing;
+  await fetch(`${API_BASE}/api/auth/csrf/`, { credentials: "include" });
+  return getCookie("csrftoken");
 }
 
-function createEntityApi(entityKey) {
+async function apiRequest(path, { method = "GET", body } = {}) {
+  const headers = {};
+  const writeMethods = ["POST", "PUT", "PATCH", "DELETE"];
+  if (body !== undefined) {
+    headers["Content-Type"] = "application/json";
+  }
+  if (writeMethods.includes(method)) {
+    const csrfToken = await ensureCsrfToken();
+    headers["X-CSRFToken"] = csrfToken || "";
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers,
+    credentials: "include",
+    body: body !== undefined ? JSON.stringify(body) : undefined,
+  });
+
+  if (res.status === 204) return null;
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = payload?.detail || "Request failed.";
+    throw new Error(detail);
+  }
+  return payload;
+}
+
+function createEntityApi(entityKey, normalizeItem) {
+  const endpoints = {
+    Course: "courses",
+    Writer: "writers",
+    Subscription: "subscriptions",
+    Lesson: "lessons",
+    MentorshipPackage: "mentorship-packages",
+    AvailableSlot: "available-slots",
+    Booking: "bookings",
+  };
+  const endpoint = endpoints[entityKey];
+  const normalize = (item) => (normalizeItem ? normalizeItem(item) : item);
+
   return {
     async list() {
-      return [...MOCK_DB[entityKey]];
+      const items = await apiRequest(`/api/${endpoint}/`);
+      return items.map(normalize);
     },
     async filter(where = {}, sortKey) {
-      const filtered = MOCK_DB[entityKey].filter((item) => matchesWhere(item, where));
+      const items = await this.list();
+      const filtered = items.filter((item) => matchesWhere(item, where));
       return sortBy(filtered, sortKey);
     },
     async create(data) {
-      const item = { id: data.id || generateId(entityKey.toLowerCase()), ...data };
-      MOCK_DB[entityKey].push(item);
-      return item;
+      const item = await apiRequest(`/api/${endpoint}/`, { method: "POST", body: data });
+      return normalize(item);
     },
     async update(id, updates) {
-      const idx = MOCK_DB[entityKey].findIndex((item) => item.id === id);
-      if (idx === -1) return null;
-      MOCK_DB[entityKey][idx] = { ...MOCK_DB[entityKey][idx], ...updates };
-      return MOCK_DB[entityKey][idx];
+      const item = await apiRequest(`/api/${endpoint}/${id}/`, { method: "PATCH", body: updates });
+      return normalize(item);
     },
   };
 }
 
+const normalizeCourse = (course) => ({
+  ...course,
+  image_url: resolveMediaUrl(course.image_file || course.image_url),
+});
+const normalizeWriter = (writer) => ({
+  ...writer,
+  image_url: resolveMediaUrl(writer.image_file || writer.image_url),
+});
+
 export const base44 = {
   auth: {
+    async csrf() {
+      await fetch(`${API_BASE}/api/auth/csrf/`, {
+        credentials: "include",
+      });
+      return getCookie("csrftoken");
+    },
     async me() {
-      return null; // later: real auth
+      const res = await fetch(`${API_BASE}/api/auth/me/`, {
+        credentials: "include",
+      });
+      if (res.status === 401) return null;
+      if (!res.ok) throw new Error("Failed to fetch user.");
+      return res.json();
+    },
+    async login({ email, password }) {
+      const csrfToken = await this.csrf();
+      const res = await fetch(`${API_BASE}/api/auth/login/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken || "",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.detail || "Login failed.");
+      }
+      return true;
+    },
+    async register({ fullName, email, password }) {
+      const csrfToken = await this.csrf();
+      const res = await fetch(`${API_BASE}/api/auth/register/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken || "",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          full_name: fullName,
+          email,
+          password,
+        }),
+      });
+      if (!res.ok) {
+        const payload = await res.json().catch(() => ({}));
+        throw new Error(payload.detail || "Registration failed.");
+      }
+      return true;
     },
     async logout() {
-      console.log("Logged out");
+      const csrfToken = getCookie("csrftoken") || (await this.csrf());
+      await fetch(`${API_BASE}/api/auth/logout/`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": csrfToken || "",
+        },
+        credentials: "include",
+      });
     },
-    redirectToLogin() {
-      alert("Login placeholder");
+    redirectToLogin(returnTo) {
+      window.dispatchEvent(
+        new CustomEvent("auth:login-request", { detail: { returnTo } })
+      );
     },
   },
 
   // ✅ entities mock (بديل مؤقت لين Django)
   entities: {
-    Course: createEntityApi("Course"),
-    Writer: createEntityApi("Writer"),
+    Course: createEntityApi("Course", normalizeCourse),
+    Writer: createEntityApi("Writer", normalizeWriter),
     Subscription: createEntityApi("Subscription"),
     Lesson: createEntityApi("Lesson"),
     MentorshipPackage: createEntityApi("MentorshipPackage"),

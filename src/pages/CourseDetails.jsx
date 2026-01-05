@@ -301,14 +301,12 @@ export default function CourseDetails() {
           <div>
             <Card className="border-none shadow-xl sticky top-24">
               <CardContent className="p-6">
-                {course.type !== 'free' && (
-                  <div className="text-center mb-6">
-                    <div className="text-4xl font-black text-[#D4AF37] mb-2">
-                      {course.price} ر.س
-                    </div>
-                    <p className="text-sm text-gray-600">سعر الدورة</p>
+                <div className="text-center mb-6">
+                  <div className="text-4xl font-black text-[#D4AF37] mb-2">
+                    {course.type === "free" ? "0 ر.س" : `${course.price} ر.س`}
                   </div>
-                )}
+                  <p className="text-sm text-gray-600">سعر الدورة</p>
+                </div>
 
                 {!isEnrolled ? (
                   <Button 
