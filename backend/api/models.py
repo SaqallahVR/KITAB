@@ -1,12 +1,14 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
 class User(AbstractUser):
     ROLE_CHOICES = [
-        ("student", "Student"),
         ("instructor", "Instructor"),
-        ("admin", "Admin"),
+        ("writer", "Writer"),
+        ("student", "Student"),
+        ("manager", "Manager"),
     ]
 
     role = models.CharField(max_length=16, choices=ROLE_CHOICES, default="student")
@@ -90,6 +92,13 @@ class Subscription(models.Model):
 
 
 class Writer(models.Model):
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        related_name="writer_profile",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     name = models.CharField(max_length=255)
     bio = models.TextField()
     image_url = models.URLField(blank=True)

@@ -73,6 +73,30 @@ async function apiRequest(path, { method = "GET", body } = {}) {
   return payload;
 }
 
+async function apiRequestForm(path, { method = "POST", formData } = {}) {
+  const headers = {};
+  const writeMethods = ["POST", "PUT", "PATCH", "DELETE"];
+  if (writeMethods.includes(method)) {
+    const csrfToken = await ensureCsrfToken();
+    headers["X-CSRFToken"] = csrfToken || "";
+  }
+
+  const res = await fetch(`${API_BASE}${path}`, {
+    method,
+    headers,
+    credentials: "include",
+    body: formData,
+  });
+
+  if (res.status === 204) return null;
+  const payload = await res.json().catch(() => null);
+  if (!res.ok) {
+    const detail = payload?.detail || "Request failed.";
+    throw new Error(detail);
+  }
+  return payload;
+}
+
 function createEntityApi(entityKey, normalizeItem) {
   const endpoints = {
     Course: "courses",
@@ -102,6 +126,10 @@ function createEntityApi(entityKey, normalizeItem) {
     },
     async update(id, updates) {
       const item = await apiRequest(`/api/${endpoint}/${id}/`, { method: "PATCH", body: updates });
+      return normalize(item);
+    },
+    async createForm(formData) {
+      const item = await apiRequestForm(`/api/${endpoint}/`, { method: "POST", formData });
       return normalize(item);
     },
   };
@@ -149,7 +177,7 @@ export const base44 = {
       }
       return true;
     },
-    async register({ fullName, email, password }) {
+    async register({ fullName, email, password, role }) {
       const csrfToken = await this.csrf();
       const res = await fetch(`${API_BASE}/api/auth/register/`, {
         method: "POST",
@@ -162,6 +190,7 @@ export const base44 = {
           full_name: fullName,
           email,
           password,
+          role,
         }),
       });
       if (!res.ok) {

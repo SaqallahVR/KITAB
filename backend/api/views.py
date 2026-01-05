@@ -1,5 +1,6 @@
 from django.contrib.auth import authenticate, get_user_model, login, logout
 from django.middleware.csrf import get_token
+from rest_framework.exceptions import ValidationError
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -80,10 +81,14 @@ class RegisterView(APIView):
         email = request.data.get("email")
         password = request.data.get("password")
         full_name = request.data.get("full_name", "").strip()
+        role = request.data.get("role", "student")
         if not email or not password:
             return Response({"detail": "Missing credentials."}, status=400)
 
         User = get_user_model()
+        valid_roles = {choice[0] for choice in User.ROLE_CHOICES}
+        if role not in valid_roles:
+            return Response({"detail": "Invalid role."}, status=400)
         if User.objects.filter(email__iexact=email).exists():
             return Response({"detail": "Email already registered."}, status=400)
 
@@ -99,6 +104,7 @@ class RegisterView(APIView):
             email=email,
             password=password,
             first_name=full_name,
+            role=role,
         )
         login(request, user)
         return Response({"detail": "Registered.", "username": user.username}, status=201)
@@ -109,6 +115,7 @@ class MeView(APIView):
 
     def get(self, request):
         user = request.user
+        writer_profile = getattr(user, "writer_profile", None)
         return Response(
             {
                 "id": user.id,
@@ -116,6 +123,7 @@ class MeView(APIView):
                 "email": user.email,
                 "full_name": user.get_full_name() or user.username,
                 "role": user.role,
+                "writer_id": writer_profile.id if writer_profile else None,
             }
         )
 
@@ -138,6 +146,17 @@ class SubscriptionViewSet(ModelViewSet):
 class WriterViewSet(ModelViewSet):
     queryset = Writer.objects.all()
     serializer_class = WriterSerializer
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        if user and user.is_authenticated:
+            if getattr(user, "role", None) != "writer":
+                raise ValidationError({"detail": "Only writer accounts can create writer profiles."})
+            if Writer.objects.filter(user=user).exists():
+                raise ValidationError({"detail": "Writer profile already exists."})
+            serializer.save(user=user, email=serializer.validated_data.get("email") or user.email)
+        else:
+            serializer.save()
 
 
 class MentorshipPackageViewSet(ModelViewSet):

@@ -17,6 +17,7 @@ export default function Layout({ children }) {
   const [user, setUser] = React.useState(null);
   const [scrolled, setScrolled] = React.useState(false);
   const [loginOpen, setLoginOpen] = React.useState(false);
+  const [loginMode, setLoginMode] = React.useState("login");
   const [returnTo, setReturnTo] = React.useState(null);
 
   React.useEffect(() => {
@@ -25,6 +26,7 @@ export default function Layout({ children }) {
 
     const handleLoginRequest = (event) => {
       setReturnTo(event.detail?.returnTo || null);
+      setLoginMode("login");
       setLoginOpen(true);
     };
 
@@ -150,12 +152,27 @@ export default function Layout({ children }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
               ) : (
-                <Button
-                  onClick={() => setLoginOpen(true)}
-                  className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white shadow-lg"
-                >
-                  تسجيل الدخول
-                </Button>
+                <>
+                  <Button
+                    onClick={() => {
+                      setLoginMode("register");
+                      setLoginOpen(true);
+                    }}
+                    variant="outline"
+                    className="border-[#D4AF37] text-[#1A1A1A] hover:bg-[#FAF9F6]"
+                  >
+                    انضم الينا
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setLoginMode("login");
+                      setLoginOpen(true);
+                    }}
+                    className="bg-gradient-to-r from-[#D4AF37] to-[#B8941F] hover:from-[#B8941F] hover:to-[#D4AF37] text-white shadow-lg"
+                  >
+                    تسجيل الدخول
+                  </Button>
+                </>
               )}
             </div>
           </div>
@@ -166,9 +183,11 @@ export default function Layout({ children }) {
       <LoginModal
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
-        onSuccess={() => {
+        initialMode={loginMode}
+        onSuccess={(payload) => {
           base44.auth.me().then(setUser).catch(() => setUser(null));
-          if (returnTo) window.location.assign(returnTo);
+          const target = payload?.returnTo || returnTo;
+          if (target) window.location.assign(target);
         }}
       />
 

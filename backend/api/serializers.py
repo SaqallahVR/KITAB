@@ -68,10 +68,13 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
 
 class WriterSerializer(serializers.ModelSerializer):
+    user_id = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
+
     class Meta:
         model = Writer
         fields = [
             "id",
+            "user_id",
             "name",
             "bio",
             "image_url",
