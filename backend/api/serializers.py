@@ -131,6 +131,9 @@ class BookingSerializer(serializers.ModelSerializer):
 
 class AvailableSlotSerializer(serializers.ModelSerializer):
     writer_id = serializers.PrimaryKeyRelatedField(source="writer", queryset=Writer.objects.all())
+    package_id = serializers.PrimaryKeyRelatedField(
+        source="package", queryset=MentorshipPackage.objects.all(), required=False, allow_null=True
+    )
     booking_id = serializers.PrimaryKeyRelatedField(
         source="booking", queryset=Booking.objects.all(), required=False, allow_null=True
     )
@@ -140,6 +143,7 @@ class AvailableSlotSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "writer_id",
+            "package_id",
             "date",
             "time",
             "is_available",

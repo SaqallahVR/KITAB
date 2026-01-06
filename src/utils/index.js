@@ -9,6 +9,9 @@ export const createPageUrl = (name) => {
       MySubscriptions: "/my-subscriptions",
       WriterProfile: "/writer-profile",
       BookingPage: "/booking-page",
+      WriterDashboard: "/writer-dashboard",
+      InstructorDashboard: "/instructor-dashboard",
+      AdminDashboard: "/admin-dashboard",
     };
     return map[name] || "/";
   };

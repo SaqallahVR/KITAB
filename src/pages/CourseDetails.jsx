@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -21,13 +21,13 @@ export default function CourseDetails() {
   const [isEnrolling, setIsEnrolling] = useState(false);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
+    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
   }, []);
 
   const { data: course, isLoading: loadingCourse } = useQuery({
     queryKey: ['course', courseId],
     queryFn: async () => {
-      const courses = await base44.entities.Course.filter({ id: courseId });
+      const courses = await kitabApi.entities.Course.filter({ id: courseId });
       return courses[0];
     },
     enabled: !!courseId,
@@ -35,7 +35,7 @@ export default function CourseDetails() {
 
   const { data: lessons, isLoading: loadingLessons } = useQuery({
     queryKey: ['lessons', courseId],
-    queryFn: () => base44.entities.Lesson.filter({ course_id: courseId }, 'order'),
+    queryFn: () => kitabApi.entities.Lesson.filter({ course_id: courseId }, 'order'),
     initialData: [],
     enabled: !!courseId,
   });
@@ -44,7 +44,7 @@ export default function CourseDetails() {
     queryKey: ['subscription', courseId, user?.email],
     queryFn: async () => {
       if (!user) return null;
-      const subs = await base44.entities.Subscription.filter({
+      const subs = await kitabApi.entities.Subscription.filter({
         course_id: courseId,
         user_email: user.email,
         payment_status: 'completed'
@@ -59,13 +59,13 @@ export default function CourseDetails() {
 
   const handleEnroll = async () => {
     if (!user) {
-      base44.auth.redirectToLogin(window.location.href);
+      kitabApi.auth.redirectToLogin(window.location.href);
       return;
     }
 
     setIsEnrolling(true);
     try {
-      await base44.entities.Subscription.create({
+      await kitabApi.entities.Subscription.create({
         user_email: user.email,
         course_id: course.id,
         course_title: course.title,

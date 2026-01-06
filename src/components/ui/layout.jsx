@@ -1,8 +1,8 @@
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { BookOpen, User, LogOut, GraduationCap, BookMarked } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { BookOpen, User, LogOut, GraduationCap, BookMarked, LayoutDashboard, Shield } from "lucide-react";
+import { kitabApi } from "@/api/kitabApiClient";
 import LoginModal from "@/components/auth/LoginModal";
 import {
   DropdownMenu,
@@ -21,7 +21,7 @@ export default function Layout({ children }) {
   const [returnTo, setReturnTo] = React.useState(null);
 
   React.useEffect(() => {
-    const refreshUser = () => base44.auth.me().then(setUser).catch(() => setUser(null));
+    const refreshUser = () => kitabApi.auth.me().then(setUser).catch(() => setUser(null));
     refreshUser();
 
     const handleLoginRequest = (event) => {
@@ -43,7 +43,7 @@ export default function Layout({ children }) {
   const isActive = (path) => location.pathname === path;
 
   const handleLogout = () => {
-    base44.auth.logout().finally(() => setUser(null));
+    kitabApi.auth.logout().finally(() => setUser(null));
   };
 
   return (
@@ -118,6 +118,51 @@ export default function Layout({ children }) {
                   الإرشاد الأدبي
                 </Button>
               </Link>
+              {user?.role === "writer" && (
+                <Link to={createPageUrl("WriterDashboard")}>
+                  <Button
+                    variant="ghost"
+                    className={`px-6 gap-2 ${
+                      isActive(createPageUrl("WriterDashboard"))
+                        ? "text-[#D4AF37] bg-[#FAF9F6]"
+                        : "text-[#1A1A1A] hover:bg-[#FAF9F6]"
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    لوحة الكاتب
+                  </Button>
+                </Link>
+              )}
+              {user?.role === "instructor" && (
+                <Link to={createPageUrl("InstructorDashboard")}>
+                  <Button
+                    variant="ghost"
+                    className={`px-6 gap-2 ${
+                      isActive(createPageUrl("InstructorDashboard"))
+                        ? "text-[#D4AF37] bg-[#FAF9F6]"
+                        : "text-[#1A1A1A] hover:bg-[#FAF9F6]"
+                    }`}
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    لوحة المدرب
+                  </Button>
+                </Link>
+              )}
+              {user?.role === "manager" && (
+                <Link to={createPageUrl("AdminDashboard")}>
+                  <Button
+                    variant="ghost"
+                    className={`px-6 gap-2 ${
+                      isActive(createPageUrl("AdminDashboard"))
+                        ? "text-[#D4AF37] bg-[#FAF9F6]"
+                        : "text-[#1A1A1A] hover:bg-[#FAF9F6]"
+                    }`}
+                  >
+                    <Shield className="w-4 h-4" />
+                    لوحة الإدارة
+                  </Button>
+                </Link>
+              )}
             </nav>
 
             <div className="flex items-center gap-3">
@@ -185,7 +230,7 @@ export default function Layout({ children }) {
         onClose={() => setLoginOpen(false)}
         initialMode={loginMode}
         onSuccess={(payload) => {
-          base44.auth.me().then(setUser).catch(() => setUser(null));
+          kitabApi.auth.me().then(setUser).catch(() => setUser(null));
           const target = payload?.returnTo || returnTo;
           if (target) window.location.assign(target);
         }}

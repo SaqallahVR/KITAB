@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -28,26 +28,26 @@ export default function BookingPage() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    base44.auth.me()
+    kitabApi.auth.me()
       .then(setUser)
       .catch(() => {
-        base44.auth.redirectToLogin(window.location.href);
+        kitabApi.auth.redirectToLogin(window.location.href);
       });
   }, []);
 
   const { data: writer } = useQuery({
     queryKey: ['writer', writerId],
     queryFn: async () => {
-      const writers = await base44.entities.Writer.filter({ id: writerId });
+      const writers = await kitabApi.entities.Writer.filter({ id: writerId });
       return writers[0];
     },
-    enabled: !!writerId,
+    enabled: !!writerId && !!packageId,
   });
 
   const { data: pkg } = useQuery({
     queryKey: ['package', packageId],
     queryFn: async () => {
-      const packages = await base44.entities.MentorshipPackage.filter({ id: packageId });
+      const packages = await kitabApi.entities.MentorshipPackage.filter({ id: packageId });
       return packages[0];
     },
     enabled: !!packageId,
@@ -55,8 +55,9 @@ export default function BookingPage() {
 
   const { data: availableSlots } = useQuery({
     queryKey: ['slots', writerId],
-    queryFn: () => base44.entities.AvailableSlot.filter({ 
+    queryFn: () => kitabApi.entities.AvailableSlot.filter({ 
       writer_id: writerId,
+      package_id: packageId,
       is_available: true 
     }, 'date'),
     initialData: [],
@@ -77,21 +78,21 @@ export default function BookingPage() {
   const createBookingMutation = useMutation({
     mutationFn: async (bookingData) => {
       // Create booking
-      const booking = await base44.entities.Booking.create(bookingData);
+      const booking = await kitabApi.entities.Booking.create(bookingData);
       
       // Mark slot as unavailable
       const slot = availableSlots.find(
         s => s.date === selectedDate && s.time === selectedTime
       );
       if (slot) {
-        await base44.entities.AvailableSlot.update(slot.id, {
+        await kitabApi.entities.AvailableSlot.update(slot.id, {
           is_available: false,
           booking_id: booking.id
         });
       }
       
       // Send email to writer
-      await base44.integrations.Core.SendEmail({
+      await kitabApi.integrations.Core.SendEmail({
         to: writer.email,
         subject: `حجز جديد من ${user.full_name}`,
         body: `
@@ -113,7 +114,7 @@ export default function BookingPage() {
       });
       
       // Send confirmation to user
-      await base44.integrations.Core.SendEmail({
+      await kitabApi.integrations.Core.SendEmail({
         to: user.email,
         subject: `تأكيد حجز جلسة إرشاد مع ${writer.name}`,
         body: `

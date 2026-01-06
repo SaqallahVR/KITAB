@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -19,13 +19,13 @@ export default function WriterProfile() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
+    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
   }, []);
 
   const { data: writer, isLoading: loadingWriter } = useQuery({
     queryKey: ['writer', writerId],
     queryFn: async () => {
-      const writers = await base44.entities.Writer.filter({ id: writerId });
+      const writers = await kitabApi.entities.Writer.filter({ id: writerId });
       return writers[0];
     },
     enabled: !!writerId,
@@ -33,14 +33,14 @@ export default function WriterProfile() {
 
   const { data: packages, isLoading: loadingPackages } = useQuery({
     queryKey: ['packages', writerId],
-    queryFn: () => base44.entities.MentorshipPackage.filter({ writer_id: writerId }, 'sessions_count'),
+    queryFn: () => kitabApi.entities.MentorshipPackage.filter({ writer_id: writerId }, 'sessions_count'),
     initialData: [],
     enabled: !!writerId,
   });
 
   const { data: myBookings } = useQuery({
     queryKey: ['my-bookings', writerId, user?.email],
-    queryFn: () => base44.entities.Booking.filter({
+    queryFn: () => kitabApi.entities.Booking.filter({
       writer_id: writerId,
       user_email: user?.email
     }),
@@ -50,7 +50,7 @@ export default function WriterProfile() {
 
   const handleBookPackage = (pkg) => {
     if (!user) {
-      base44.auth.redirectToLogin(window.location.href);
+      kitabApi.auth.redirectToLogin(window.location.href);
       return;
     }
     

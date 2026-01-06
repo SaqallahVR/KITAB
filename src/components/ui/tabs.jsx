@@ -47,7 +47,9 @@ export function TabsTrigger({ children, className = "", value, ...props }) {
       onClick={() => ctx?.setValue?.(value)}
       className={cn(
         "inline-flex items-center justify-center whitespace-nowrap rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
-        isActive ? "bg-white text-[#1A1A1A] shadow-sm" : "text-gray-600 hover:text-[#1A1A1A]",
+        isActive
+          ? "bg-[#D4AF37] text-white shadow-sm"
+          : "text-gray-600 hover:text-[#1A1A1A]",
         className
       )}
       {...props}

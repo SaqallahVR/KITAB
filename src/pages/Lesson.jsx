@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -16,13 +16,13 @@ export default function Lesson() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    base44.auth.me().then(setUser).catch(() => setUser(null));
+    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
   }, []);
 
   const { data: lesson, isLoading: loadingLesson } = useQuery({
     queryKey: ['lesson', lessonId],
     queryFn: async () => {
-      const lessons = await base44.entities.Lesson.filter({ id: lessonId });
+      const lessons = await kitabApi.entities.Lesson.filter({ id: lessonId });
       return lessons[0];
     },
     enabled: !!lessonId,
@@ -31,7 +31,7 @@ export default function Lesson() {
   const { data: course } = useQuery({
     queryKey: ['course', lesson?.course_id],
     queryFn: async () => {
-      const courses = await base44.entities.Course.filter({ id: lesson.course_id });
+      const courses = await kitabApi.entities.Course.filter({ id: lesson.course_id });
       return courses[0];
     },
     enabled: !!lesson?.course_id,
@@ -39,7 +39,7 @@ export default function Lesson() {
 
   const { data: allLessons } = useQuery({
     queryKey: ['lessons', lesson?.course_id],
-    queryFn: () => base44.entities.Lesson.filter({ course_id: lesson.course_id }, 'order'),
+    queryFn: () => kitabApi.entities.Lesson.filter({ course_id: lesson.course_id }, 'order'),
     initialData: [],
     enabled: !!lesson?.course_id,
   });
@@ -48,7 +48,7 @@ export default function Lesson() {
     queryKey: ['subscription', lesson?.course_id, user?.email],
     queryFn: async () => {
       if (!user) return null;
-      const subs = await base44.entities.Subscription.filter({
+      const subs = await kitabApi.entities.Subscription.filter({
         course_id: lesson.course_id,
         user_email: user.email,
         payment_status: 'completed'

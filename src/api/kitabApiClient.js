@@ -128,6 +128,10 @@ function createEntityApi(entityKey, normalizeItem) {
       const item = await apiRequest(`/api/${endpoint}/${id}/`, { method: "PATCH", body: updates });
       return normalize(item);
     },
+    async delete(id) {
+      await apiRequest(`/api/${endpoint}/${id}/`, { method: "DELETE" });
+      return true;
+    },
     async createForm(formData) {
       const item = await apiRequestForm(`/api/${endpoint}/`, { method: "POST", formData });
       return normalize(item);
@@ -144,7 +148,7 @@ const normalizeWriter = (writer) => ({
   image_url: resolveMediaUrl(writer.image_file || writer.image_url),
 });
 
-export const base44 = {
+export const kitabApi = {
   auth: {
     async csrf() {
       await fetch(`${API_BASE}/api/auth/csrf/`, {
@@ -239,4 +243,4 @@ export const base44 = {
 };
 
 // (اختياري) لو حبيت تستخدم default import في بعض الملفات
-export default base44;
+export default kitabApi;

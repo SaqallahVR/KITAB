@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -15,17 +15,17 @@ export default function MySubscriptions() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.me()
+    kitabApi.auth.me()
       .then(setUser)
       .catch(() => {
-        base44.auth.redirectToLogin(window.location.href);
+        kitabApi.auth.redirectToLogin(window.location.href);
       })
       .finally(() => setLoading(false));
   }, []);
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['my-subscriptions', user?.email],
-    queryFn: () => base44.entities.Subscription.filter({ 
+    queryFn: () => kitabApi.entities.Subscription.filter({ 
       user_email: user.email,
       payment_status: 'completed'
     }, '-created_date'),
@@ -35,7 +35,7 @@ export default function MySubscriptions() {
 
   const { data: allCourses } = useQuery({
     queryKey: ['all-courses'],
-    queryFn: () => base44.entities.Course.list(),
+    queryFn: () => kitabApi.entities.Course.list(),
     initialData: [],
     enabled: !!user,
   });

@@ -4,7 +4,7 @@ import { createPageUrl } from "@/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, BookOpen, Users, Video, Award, Star, GraduationCap, BookMarked, Sparkles } from "lucide-react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -16,9 +16,9 @@ export default function Home() {
 
   React.useEffect(() => {
     Promise.all([
-      base44.entities.Course.list(),
-      base44.entities.Writer.list(),
-      base44.entities.Subscription.list()
+      kitabApi.entities.Course.list(),
+      kitabApi.entities.Writer.list(),
+      kitabApi.entities.Subscription.list()
     ]).then(([courses, writers, subscriptions]) => {
       setStats({
         courses: courses.filter(c => c.published).length,
@@ -29,12 +29,12 @@ export default function Home() {
   }, []);
 
   const handleStartNow = async () => {
-    const currentUser = await base44.auth.me().catch(() => null);
+    const currentUser = await kitabApi.auth.me().catch(() => null);
     if (currentUser) {
       navigate(createPageUrl("Courses"));
       return;
     }
-    base44.auth.redirectToLogin(createPageUrl("Courses"));
+    kitabApi.auth.redirectToLogin(createPageUrl("Courses"));
   };
 
   const features = [

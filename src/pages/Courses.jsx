@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -18,7 +18,7 @@ export default function Courses() {
 
   const { data: courses, isLoading } = useQuery({
     queryKey: ['courses'],
-    queryFn: () => base44.entities.Course.filter({ published: true }, '-created_date'),
+    queryFn: () => kitabApi.entities.Course.filter({ published: true }, '-created_date'),
     initialData: [],
   });
 

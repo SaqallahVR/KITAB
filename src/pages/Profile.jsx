@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import { createPageUrl } from "@/utils";
@@ -20,17 +20,17 @@ export default function Profile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    base44.auth.me()
+    kitabApi.auth.me()
       .then(setUser)
       .catch(() => {
-        base44.auth.redirectToLogin(window.location.href);
+        kitabApi.auth.redirectToLogin(window.location.href);
       })
       .finally(() => setLoading(false));
   }, []);
 
   const { data: subscriptions } = useQuery({
     queryKey: ['my-subscriptions', user?.email],
-    queryFn: () => base44.entities.Subscription.filter({ 
+    queryFn: () => kitabApi.entities.Subscription.filter({ 
       user_email: user.email,
       payment_status: 'completed'
     }),
@@ -40,7 +40,7 @@ export default function Profile() {
 
   const { data: bookings } = useQuery({
     queryKey: ['my-bookings', user?.email],
-    queryFn: () => base44.entities.Booking.filter({ 
+    queryFn: () => kitabApi.entities.Booking.filter({ 
       user_email: user.email 
     }, '-created_date'),
     initialData: [],
@@ -49,7 +49,7 @@ export default function Profile() {
 
   const { data: allCourses } = useQuery({
     queryKey: ['all-courses'],
-    queryFn: () => base44.entities.Course.list(),
+    queryFn: () => kitabApi.entities.Course.list(),
     initialData: [],
     enabled: !!user,
   });
@@ -94,7 +94,7 @@ export default function Profile() {
       <div className="max-w-7xl mx-auto px-6">
         {/* Profile Header */}
         <Card className="border-none shadow-xl mb-8 bg-gradient-to-br from-[#1A1A1A] to-[#2A2520] text-white">
-          <CardContent className="p-8">
+          <CardContent className="px-8 pt-10 pb-8">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 bg-gradient-to-br from-[#D4AF37] to-[#B8941F] rounded-2xl flex items-center justify-center">
                 <User className="w-12 h-12 text-white" />
@@ -198,7 +198,7 @@ export default function Profile() {
               <div className="space-y-4">
                 {bookings.map((booking) => (
                   <Card key={booking.id} className="border-none shadow-lg hover:shadow-xl transition-shadow">
-                    <CardContent className="p-6">
+                    <CardContent className="px-6 pt-8 pb-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-3 mb-3">

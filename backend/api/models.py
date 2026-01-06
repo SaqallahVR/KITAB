@@ -162,6 +162,13 @@ class Booking(models.Model):
 
 class AvailableSlot(models.Model):
     writer = models.ForeignKey(Writer, related_name="available_slots", on_delete=models.CASCADE)
+    package = models.ForeignKey(
+        MentorshipPackage,
+        related_name="available_slots",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+    )
     date = models.DateField()
     time = models.CharField(max_length=50)
     is_available = models.BooleanField(default=True)

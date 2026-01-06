@@ -11,6 +11,9 @@ import MySubscriptions from "@/pages/MySubscriptions";
 import Profile from "@/pages/Profile";
 import WriterProfile from "@/pages/WriterProfile";
 import BookingPage from "@/pages/BookingPage";
+import WriterDashboard from "@/pages/WriterDashboard";
+import InstructorDashboard from "@/pages/InstructorDashboard";
+import AdminDashboard from "@/pages/AdminDashboard";
 
 function NotFound() {
   return (
@@ -35,6 +38,9 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="/writer-profile" element={<WriterProfile />} />
           <Route path="/booking-page" element={<BookingPage />} />
+          <Route path="/writer-dashboard" element={<WriterDashboard />} />
+          <Route path="/instructor-dashboard" element={<InstructorDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

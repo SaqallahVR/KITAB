@@ -1,5 +1,5 @@
 import React from "react";
-import { base44 } from "@/api/base44Client";
+import { kitabApi } from "@/api/kitabApiClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -79,10 +79,10 @@ export default function LoginModal({ open, onClose, onSuccess, initialMode = "lo
       }
 
       if (mode === "register" && !registrationDone) {
-        await base44.auth.register({ fullName, email, password, role });
+        await kitabApi.auth.register({ fullName, email, password, role });
         setRegistrationDone(true);
       } else if (mode === "login") {
-        await base44.auth.login({ email, password });
+        await kitabApi.auth.login({ email, password });
       }
 
       if (mode === "register" && role === "writer") {
@@ -96,7 +96,7 @@ export default function LoginModal({ open, onClose, onSuccess, initialMode = "lo
         if (writerImage) formData.append("image_file", writerImage);
         formData.append("active", "true");
 
-        const writer = await base44.entities.Writer.createForm(formData);
+        const writer = await kitabApi.entities.Writer.createForm(formData);
         onSuccess?.({ returnTo: `/writer-profile?id=${writer.id}` });
       } else {
         onSuccess?.();
