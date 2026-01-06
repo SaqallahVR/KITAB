@@ -14,6 +14,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import { getBookingStatusClass, getBookingStatusLabel } from "@/utils/status";
 
 export default function Profile() {
   const [user, setUser] = useState(null);
@@ -57,26 +58,6 @@ export default function Profile() {
   const subscribedCourses = subscriptions.map(sub => {
     return allCourses.find(c => c.id === sub.course_id);
   }).filter(Boolean);
-
-  const getStatusLabel = (status) => {
-    const labels = {
-      pending: 'قيد المراجعة',
-      confirmed: 'مؤكد',
-      completed: 'مكتمل',
-      cancelled: 'ملغي'
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: 'bg-yellow-100 text-yellow-800',
-      confirmed: 'bg-green-100 text-green-800',
-      completed: 'bg-blue-100 text-blue-800',
-      cancelled: 'bg-red-100 text-red-800'
-    };
-    return colors[status] || 'bg-gray-100 text-gray-800';
-  };
 
   if (loading) {
     return (
@@ -205,9 +186,9 @@ export default function Profile() {
                             <h3 className="text-xl font-bold text-[#1A1A1A]">
                               {booking.writer_name}
                             </h3>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusLabel(booking.status)}
-                            </Badge>
+                      <Badge className={getBookingStatusClass(booking.status)}>
+                        {getBookingStatusLabel(booking.status)}
+                      </Badge>
                           </div>
                           
                           <div className="grid md:grid-cols-2 gap-4 text-sm text-gray-600">

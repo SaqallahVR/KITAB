@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Users, BookOpen, Calendar, Edit, Trash2, Plus, Save, X, Loader2,
+  Users, BookOpen, Calendar, Edit, Trash2, Save, Loader2,
   GraduationCap, PackagePlus, FileText
 } from "lucide-react";
 import {
@@ -15,7 +15,6 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -33,6 +32,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import StatCard from "@/components/ui/stat-card";
+import {
+  getBookingStatusClass,
+  getBookingStatusLabel,
+  getPaymentStatusClass,
+  getPaymentStatusLabel,
+} from "@/utils/status";
 
 export default function AdminDashboard() {
   const [user, setUser] = useState(null);
@@ -41,6 +47,14 @@ export default function AdminDashboard() {
   const [editDialog, setEditDialog] = useState({ open: false, type: null, data: null });
 
   const queryClient = useQueryClient();
+  const entityQueryKeyMap = {
+    Writer: "admin-writers",
+    Course: "admin-courses",
+    Lesson: "admin-lessons",
+    MentorshipPackage: "admin-packages",
+    Booking: "admin-bookings",
+    Subscription: "admin-subscriptions",
+  };
 
   useEffect(() => {
     kitabApi.auth.me()
@@ -113,7 +127,10 @@ export default function AdminDashboard() {
       }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [`admin-${variables.entity.toLowerCase()}s`] });
+      const queryKey = entityQueryKeyMap[variables.entity];
+      if (queryKey) {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
+      }
       setEditDialog({ open: false, type: null, data: null });
     },
   });
@@ -130,7 +147,10 @@ export default function AdminDashboard() {
       }
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [`admin-${variables.entity.toLowerCase()}s`] });
+      const queryKey = entityQueryKeyMap[variables.entity];
+      if (queryKey) {
+        queryClient.invalidateQueries({ queryKey: [queryKey] });
+      }
     },
   });
 
@@ -168,60 +188,54 @@ export default function AdminDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 md:grid-cols-6 gap-4 mb-8">
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#FFFBF2]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#D4AF37]/15 flex items-center justify-center">
-                <Users className="w-6 h-6 text-[#B8941F]" />
-              </div>
-              <p className="text-2xl font-black">{writers.length}</p>
-              <p className="text-xs text-gray-600 mt-2">كتّاب</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#F5F1FF]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#5B6EE1]/15 flex items-center justify-center">
-                <GraduationCap className="w-6 h-6 text-[#5B6EE1]" />
-              </div>
-              <p className="text-2xl font-black">{courses.length}</p>
-              <p className="text-xs text-gray-600 mt-2">دورات</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#F2FBF6]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#2BAF6A]/15 flex items-center justify-center">
-                <FileText className="w-6 h-6 text-[#2BAF6A]" />
-              </div>
-              <p className="text-2xl font-black">{lessons.length}</p>
-              <p className="text-xs text-gray-600 mt-2">دروس</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#FFF6F0]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#E78B3A]/15 flex items-center justify-center">
-                <PackagePlus className="w-6 h-6 text-[#E78B3A]" />
-              </div>
-              <p className="text-2xl font-black">{packages.length}</p>
-              <p className="text-xs text-gray-600 mt-2">باقات</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#F2F7FF]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#3A7BD5]/15 flex items-center justify-center">
-                <Calendar className="w-6 h-6 text-[#3A7BD5]" />
-              </div>
-              <p className="text-2xl font-black">{bookings.length}</p>
-              <p className="text-xs text-gray-600 mt-2">حجوزات</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md bg-gradient-to-b from-white to-[#F7F2FF]">
-            <CardContent className="p-6 pt-8 text-center">
-              <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-[#8E5AD7]/15 flex items-center justify-center">
-                <BookOpen className="w-6 h-6 text-[#8E5AD7]" />
-              </div>
-              <p className="text-2xl font-black">{subscriptions.length}</p>
-              <p className="text-xs text-gray-600 mt-2">اشتراكات</p>
-            </CardContent>
-          </Card>
+          <StatCard
+            label="كتّاب"
+            value={writers.length}
+            Icon={Users}
+            iconColor="text-[#B8941F]"
+            iconBg="bg-[#D4AF37]/15"
+            bg="from-white to-[#FFFBF2]"
+          />
+          <StatCard
+            label="دورات"
+            value={courses.length}
+            Icon={GraduationCap}
+            iconColor="text-[#5B6EE1]"
+            iconBg="bg-[#5B6EE1]/15"
+            bg="from-white to-[#F5F1FF]"
+          />
+          <StatCard
+            label="دروس"
+            value={lessons.length}
+            Icon={FileText}
+            iconColor="text-[#2BAF6A]"
+            iconBg="bg-[#2BAF6A]/15"
+            bg="from-white to-[#F2FBF6]"
+          />
+          <StatCard
+            label="باقات"
+            value={packages.length}
+            Icon={PackagePlus}
+            iconColor="text-[#E78B3A]"
+            iconBg="bg-[#E78B3A]/15"
+            bg="from-white to-[#FFF6F0]"
+          />
+          <StatCard
+            label="حجوزات"
+            value={bookings.length}
+            Icon={Calendar}
+            iconColor="text-[#3A7BD5]"
+            iconBg="bg-[#3A7BD5]/15"
+            bg="from-white to-[#F2F7FF]"
+          />
+          <StatCard
+            label="اشتراكات"
+            value={subscriptions.length}
+            Icon={BookOpen}
+            iconColor="text-[#8E5AD7]"
+            iconBg="bg-[#8E5AD7]/15"
+            bg="from-white to-[#F7F2FF]"
+          />
         </div>
 
         {/* Tabs */}
@@ -339,13 +353,8 @@ export default function AdminDashboard() {
                                     <div className="flex-1">
                                       <p className="font-medium text-sm">{booking.user_name}</p>
                                       <p className="text-xs text-gray-600">{booking.sessions_count} جلسات</p>
-                                      <Badge className={
-                                        booking.status === 'confirmed' ? 'bg-green-100 text-green-800 text-xs mt-1' :
-                                        booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800 text-xs mt-1' :
-                                        'bg-gray-100 text-gray-800 text-xs mt-1'
-                                      }>
-                                        {booking.status === 'confirmed' ? 'مؤكد' :
-                                         booking.status === 'pending' ? 'قيد المراجعة' : booking.status}
+                                      <Badge className={getBookingStatusClass(booking.status, "text-xs mt-1")}>
+                                        {getBookingStatusLabel(booking.status)}
                                       </Badge>
                                     </div>
                                     <Button
@@ -633,15 +642,8 @@ export default function AdminDashboard() {
                           <TableCell>{booking.writer_name}</TableCell>
                           <TableCell>{booking.sessions_count}</TableCell>
                           <TableCell>
-                            <Badge className={
-                              booking.status === 'confirmed' ? 'bg-green-100 text-green-800' :
-                              booking.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              booking.status === 'completed' ? 'bg-blue-100 text-blue-800' :
-                              'bg-red-100 text-red-800'
-                            }>
-                              {booking.status === 'pending' ? 'قيد المراجعة' :
-                               booking.status === 'confirmed' ? 'مؤكد' :
-                               booking.status === 'completed' ? 'مكتمل' : 'ملغي'}
+                            <Badge className={getBookingStatusClass(booking.status)}>
+                              {getBookingStatusLabel(booking.status)}
                             </Badge>
                           </TableCell>
                           <TableCell>
@@ -697,13 +699,8 @@ export default function AdminDashboard() {
                           <TableCell>{sub.course_title}</TableCell>
                           <TableCell>{sub.payment_amount || 0} ر.س</TableCell>
                           <TableCell>
-                            <Badge className={
-                              sub.payment_status === 'completed' ? 'bg-green-100 text-green-800' :
-                              sub.payment_status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                              'bg-red-100 text-red-800'
-                            }>
-                              {sub.payment_status === 'completed' ? 'مكتمل' :
-                               sub.payment_status === 'pending' ? 'قيد الانتظار' : 'فشل'}
+                            <Badge className={getPaymentStatusClass(sub.payment_status)}>
+                              {getPaymentStatusLabel(sub.payment_status)}
                             </Badge>
                           </TableCell>
                           <TableCell>

@@ -39,6 +39,19 @@ function sortBy(list, sortKey) {
   });
 }
 
+function buildQueryParams(where = {}) {
+  const params = new URLSearchParams();
+  Object.entries(where).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    if (typeof value === "boolean") {
+      params.set(key, value ? "true" : "false");
+      return;
+    }
+    params.set(key, String(value));
+  });
+  return params;
+}
+
 async function ensureCsrfToken() {
   const existing = getCookie("csrftoken");
   if (existing) return existing;
@@ -116,8 +129,11 @@ function createEntityApi(entityKey, normalizeItem) {
       return items.map(normalize);
     },
     async filter(where = {}, sortKey) {
-      const items = await this.list();
-      const filtered = items.filter((item) => matchesWhere(item, where));
+      const params = buildQueryParams(where);
+      const query = params.toString();
+      const items = await apiRequest(`/api/${endpoint}/${query ? `?${query}` : ""}`);
+      const normalized = items.map(normalize);
+      const filtered = normalized.filter((item) => matchesWhere(item, where));
       return sortBy(filtered, sortKey);
     },
     async create(data) {

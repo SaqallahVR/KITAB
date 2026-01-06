@@ -128,24 +128,50 @@ class MeView(APIView):
         )
 
 
-class CourseViewSet(ModelViewSet):
+class QueryParamFilterMixin:
+    filter_fields = ()
+
+    def get_queryset(self):
+        qs = super().get_queryset()
+        if not self.filter_fields:
+            return qs
+        params = self.request.query_params
+        filters = {}
+        for field in self.filter_fields:
+            if field not in params:
+                continue
+            value = params.get(field)
+            if value is None or value == "":
+                continue
+            lowered = value.lower()
+            if lowered in {"true", "false"}:
+                value = lowered == "true"
+            filters[field] = value
+        return qs.filter(**filters)
+
+
+class CourseViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = Course.objects.all()
     serializer_class = CourseSerializer
+    filter_fields = ("id", "instructor", "type", "published", "level", "category")
 
 
-class LessonViewSet(ModelViewSet):
+class LessonViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = Lesson.objects.all()
     serializer_class = LessonSerializer
+    filter_fields = ("id", "course_id", "type", "is_free")
 
 
-class SubscriptionViewSet(ModelViewSet):
+class SubscriptionViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = Subscription.objects.all()
     serializer_class = SubscriptionSerializer
+    filter_fields = ("id", "course_id", "user_email", "payment_status")
 
 
-class WriterViewSet(ModelViewSet):
+class WriterViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = Writer.objects.all()
     serializer_class = WriterSerializer
+    filter_fields = ("id", "active", "email")
 
     def perform_create(self, serializer):
         user = self.request.user
@@ -159,16 +185,19 @@ class WriterViewSet(ModelViewSet):
             serializer.save()
 
 
-class MentorshipPackageViewSet(ModelViewSet):
+class MentorshipPackageViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = MentorshipPackage.objects.all()
     serializer_class = MentorshipPackageSerializer
+    filter_fields = ("id", "writer_id")
 
 
-class BookingViewSet(ModelViewSet):
+class BookingViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = Booking.objects.all()
     serializer_class = BookingSerializer
+    filter_fields = ("id", "writer_id", "package_id", "status", "payment_status", "user_email")
 
 
-class AvailableSlotViewSet(ModelViewSet):
+class AvailableSlotViewSet(QueryParamFilterMixin, ModelViewSet):
     queryset = AvailableSlot.objects.all()
     serializer_class = AvailableSlotSerializer
+    filter_fields = ("id", "writer_id", "package_id", "is_available", "booking_id", "date")

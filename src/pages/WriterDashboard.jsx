@@ -7,6 +7,8 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import StatCard from "@/components/ui/stat-card";
+import { getBookingStatusClass, getBookingStatusLabel } from "@/utils/status";
 import {
   PackagePlus,
   Users,
@@ -169,26 +171,6 @@ export default function WriterDashboard() {
     });
   };
 
-  const getStatusLabel = (status) => {
-    const labels = {
-      pending: "قيد المراجعة",
-      confirmed: "مؤكد",
-      completed: "مكتمل",
-      cancelled: "ملغي",
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusColor = (status) => {
-    const colors = {
-      pending: "bg-yellow-100 text-yellow-800",
-      confirmed: "bg-green-100 text-green-800",
-      completed: "bg-blue-100 text-blue-800",
-      cancelled: "bg-red-100 text-red-800",
-    };
-    return colors[status] || "bg-gray-100 text-gray-800";
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -220,49 +202,36 @@ export default function WriterDashboard() {
         </div>
 
         <div className="grid md:grid-cols-3 gap-6 mb-8">
-          <Card className="border-none shadow-lg bg-gradient-to-br from-[#FFF4D6] to-white">
-            <CardContent className="px-6 pt-7 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#D4AF37]/20 rounded-lg flex items-center justify-center">
-                  <PackagePlus className="w-6 h-6 text-[#D4AF37]" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">الباقات</p>
-                  <p className="text-2xl font-black text-[#1A1A1A]">{packages.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg bg-gradient-to-br from-[#E9FBF1] to-white">
-            <CardContent className="px-6 pt-6 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                  <Users className="w-6 h-6 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">الحجوزات</p>
-                  <p className="text-2xl font-black text-[#1A1A1A]">{bookings.length}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-none shadow-lg bg-gradient-to-br from-[#EAF2FF] to-white">
-            <CardContent className="px-6 pt-8 pb-6">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                  <Calendar className="w-6 h-6 text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">الجلسات النشطة</p>
-                  <p className="text-2xl font-black text-[#1A1A1A]">
-                    {bookings.filter((b) => b.status === "confirmed").length}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <StatCard
+            label="الباقات"
+            value={packages.length}
+            Icon={PackagePlus}
+            layout="row"
+            bg="from-[#FFF4D6] to-white"
+            iconBg="bg-[#D4AF37]/20"
+            iconColor="text-[#D4AF37]"
+            padding="pt-7"
+          />
+          <StatCard
+            label="الحجوزات"
+            value={bookings.length}
+            Icon={Users}
+            layout="row"
+            bg="from-[#E9FBF1] to-white"
+            iconBg="bg-green-100"
+            iconColor="text-green-600"
+            padding="pt-6"
+          />
+          <StatCard
+            label="الجلسات النشطة"
+            value={bookings.filter((b) => b.status === "confirmed").length}
+            Icon={Calendar}
+            layout="row"
+            bg="from-[#EAF2FF] to-white"
+            iconBg="bg-blue-100"
+            iconColor="text-blue-600"
+            padding="pt-8"
+          />
         </div>
 
         <Tabs defaultValue="packages" className="w-full">
@@ -535,8 +504,8 @@ export default function WriterDashboard() {
                             <h3 className="text-xl font-bold text-[#1A1A1A]">
                               {booking.user_name}
                             </h3>
-                            <Badge className={getStatusColor(booking.status)}>
-                              {getStatusLabel(booking.status)}
+                            <Badge className={getBookingStatusClass(booking.status)}>
+                              {getBookingStatusLabel(booking.status)}
                             </Badge>
                           </div>
 

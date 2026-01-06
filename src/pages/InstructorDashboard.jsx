@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import StatCard from "@/components/ui/stat-card";
 import {
   Dialog,
   DialogContent,
@@ -137,20 +138,8 @@ export default function InstructorDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-2 gap-4 mb-8">
-          <Card className="border-none shadow-md">
-            <CardContent className="p-6 pt-8 text-center">
-              <GraduationCap className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" />
-              <p className="text-3xl font-black">{courses.length}</p>
-              <p className="text-sm text-gray-600 mt-2">دوراتي</p>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-md">
-            <CardContent className="p-6 pt-8 text-center">
-              <FileText className="w-8 h-8 text-[#D4AF37] mx-auto mb-2" />
-              <p className="text-3xl font-black">{myLessons.length}</p>
-              <p className="text-sm text-gray-600 mt-2">الدروس</p>
-            </CardContent>
-          </Card>
+          <StatCard label="دوراتي" value={courses.length} Icon={GraduationCap} />
+          <StatCard label="الدروس" value={myLessons.length} Icon={FileText} />
         </div>
 
         <Tabs defaultValue="courses">
@@ -327,6 +316,7 @@ export default function InstructorDashboard() {
     </div>
   );
 }
+
 
 function CourseDialog({ dialog, setDialog, user, onCreate, onUpdate }) {
   const [formData, setFormData] = useState({
