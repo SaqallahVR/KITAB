@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -12,13 +12,14 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
 import { format, addDays } from "date-fns";
 import { ar } from "date-fns/locale";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function BookingPage() {
   const urlParams = new URLSearchParams(window.location.search);
   const writerId = urlParams.get('writer_id');
   const packageId = urlParams.get('package_id');
   
-  const [user, setUser] = useState(null);
+  const { user } = useAuthGuard();
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
   const [notes, setNotes] = useState("");
@@ -26,14 +27,6 @@ export default function BookingPage() {
   const [success, setSuccess] = useState(false);
   
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    kitabApi.auth.me()
-      .then(setUser)
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      });
-  }, []);
 
   const { data: writer } = useQuery({
     queryKey: ['writer', writerId],

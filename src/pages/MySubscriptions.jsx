@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -9,19 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { Play, Clock, CheckCircle2, GraduationCap, BookOpen } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function MySubscriptions() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    kitabApi.auth.me()
-      .then(setUser)
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const { user, loading } = useAuthGuard();
 
   const { data: subscriptions, isLoading } = useQuery({
     queryKey: ['my-subscriptions', user?.email],

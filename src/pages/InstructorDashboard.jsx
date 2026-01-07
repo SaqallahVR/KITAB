@@ -24,29 +24,14 @@ import {
 import {
   GraduationCap, FileText, Plus, Edit, Trash2, Save, Loader2
 } from "lucide-react";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function InstructorDashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuthGuard({ roles: ["instructor"] });
   const [courseDialog, setCourseDialog] = useState({ open: false, data: null });
   const [lessonDialog, setLessonDialog] = useState({ open: false, data: null });
 
   const queryClient = useQueryClient();
-
-  useEffect(() => {
-    kitabApi.auth.me()
-      .then((userData) => {
-        if (userData.role !== "instructor") {
-          window.location.href = "/";
-          return;
-        }
-        setUser(userData);
-      })
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   const { data: courses } = useQuery({
     queryKey: ["instructor-courses", user?.full_name],

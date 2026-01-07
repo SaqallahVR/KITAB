@@ -10,6 +10,7 @@ function getCookie(name) {
 
 function resolveMediaUrl(url) {
   if (!url) return "";
+  if (url.startsWith("data:")) return url;
   if (url.startsWith("http://") || url.startsWith("https://")) return url;
   if (url.startsWith("/")) return `${API_BASE}${url}`;
   return url;
@@ -157,11 +158,11 @@ function createEntityApi(entityKey, normalizeItem) {
 
 const normalizeCourse = (course) => ({
   ...course,
-  image_url: resolveMediaUrl(course.image_file || course.image_url),
+  image_url: resolveMediaUrl(course.image_data || course.image_url),
 });
 const normalizeWriter = (writer) => ({
   ...writer,
-  image_url: resolveMediaUrl(writer.image_file || writer.image_url),
+  image_url: resolveMediaUrl(writer.image_data || writer.image_url),
 });
 
 export const kitabApi = {

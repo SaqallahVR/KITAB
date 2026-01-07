@@ -32,11 +32,11 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function WriterDashboard() {
-  const [user, setUser] = useState(null);
+  const { user, loading } = useAuthGuard({ roles: ["writer"] });
   const [writer, setWriter] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [editingPackage, setEditingPackage] = useState(null);
   const [showPackageDialog, setShowPackageDialog] = useState(false);
   const [packageForm, setPackageForm] = useState({
@@ -52,20 +52,16 @@ export default function WriterDashboard() {
   const queryClient = useQueryClient();
 
   useEffect(() => {
-    kitabApi.auth
-      .me()
-      .then(async (userData) => {
-        setUser(userData);
-        const writers = await kitabApi.entities.Writer.filter({ email: userData.email });
-        if (writers[0]) {
-          setWriter(writers[0]);
-        }
-      })
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+    if (!user) return;
+    let isActive = true;
+    kitabApi.entities.Writer.filter({ email: user.email }).then((writers) => {
+      if (!isActive) return;
+      setWriter(writers[0] || null);
+    });
+    return () => {
+      isActive = false;
+    };
+  }, [user]);
 
   const { data: packages } = useQuery({
     queryKey: ["writer-packages", writer?.id],

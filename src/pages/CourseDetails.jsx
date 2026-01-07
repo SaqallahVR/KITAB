@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -13,16 +13,13 @@ import {
 } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function CourseDetails() {
   const urlParams = new URLSearchParams(window.location.search);
   const courseId = urlParams.get('id');
-  const [user, setUser] = useState(null);
+  const { user } = useAuthGuard({ requireAuth: false });
   const [isEnrolling, setIsEnrolling] = useState(false);
-
-  useEffect(() => {
-    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
-  }, []);
 
   const { data: course, isLoading: loadingCourse } = useQuery({
     queryKey: ['course', courseId],

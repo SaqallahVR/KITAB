@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -15,19 +15,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { format } from "date-fns";
 import { ar } from "date-fns/locale";
 import { getBookingStatusClass, getBookingStatusLabel } from "@/utils/status";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    kitabApi.auth.me()
-      .then(setUser)
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      })
-      .finally(() => setLoading(false));
-  }, []);
+  const { user, loading } = useAuthGuard();
 
   const { data: subscriptions } = useQuery({
     queryKey: ['my-subscriptions', user?.email],

@@ -1,3 +1,5 @@
+import base64
+
 from rest_framework import serializers
 
 from .models import (
@@ -11,7 +13,41 @@ from .models import (
 )
 
 
-class CourseSerializer(serializers.ModelSerializer):
+class BinaryImageMixin:
+    image_data = serializers.SerializerMethodField(read_only=True)
+    image_file = serializers.ImageField(write_only=True, required=False)
+
+    def get_image_data(self, obj):
+        if not obj.image_blob:
+            return ""
+        mime = obj.image_mime or "application/octet-stream"
+        encoded = base64.b64encode(obj.image_blob).decode("ascii")
+        return f"data:{mime};base64,{encoded}"
+
+    def _apply_image(self, instance, image_file):
+        if not image_file:
+            return False
+        instance.image_blob = image_file.read()
+        instance.image_mime = getattr(image_file, "content_type", "") or "application/octet-stream"
+        return True
+
+    def create(self, validated_data):
+        image_file = validated_data.pop("image_file", None)
+        instance = super().create(validated_data)
+        if self._apply_image(instance, image_file):
+            instance.save(update_fields=["image_blob", "image_mime"])
+        return instance
+
+    def update(self, instance, validated_data):
+        image_file = validated_data.pop("image_file", None)
+        instance = super().update(instance, validated_data)
+        if self._apply_image(instance, image_file):
+            instance.save(update_fields=["image_blob", "image_mime"])
+        return instance
+
+
+class CourseSerializer(BinaryImageMixin, serializers.ModelSerializer):
+
     class Meta:
         model = Course
         fields = [
@@ -19,6 +55,7 @@ class CourseSerializer(serializers.ModelSerializer):
             "title",
             "description",
             "image_url",
+            "image_data",
             "image_file",
             "instructor",
             "type",
@@ -67,9 +104,8 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         ]
 
 
-class WriterSerializer(serializers.ModelSerializer):
+class WriterSerializer(BinaryImageMixin, serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
-
     class Meta:
         model = Writer
         fields = [
@@ -78,6 +114,7 @@ class WriterSerializer(serializers.ModelSerializer):
             "name",
             "bio",
             "image_url",
+            "image_data",
             "image_file",
             "specialty",
             "email",

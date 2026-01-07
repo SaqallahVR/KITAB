@@ -39,14 +39,14 @@ import {
   getPaymentStatusClass,
   getPaymentStatusLabel,
 } from "@/utils/status";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function AdminDashboard() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("writers");
   const [editDialog, setEditDialog] = useState({ open: false, type: null, data: null });
 
   const queryClient = useQueryClient();
+  const { user, loading } = useAuthGuard({ roles: ["manager"] });
   const entityQueryKeyMap = {
     Writer: "admin-writers",
     Course: "admin-courses",
@@ -55,21 +55,6 @@ export default function AdminDashboard() {
     Booking: "admin-bookings",
     Subscription: "admin-subscriptions",
   };
-
-  useEffect(() => {
-    kitabApi.auth.me()
-      .then((userData) => {
-        if (userData.role !== 'manager') {
-          window.location.href = '/';
-          return;
-        }
-        setUser(userData);
-      })
-      .catch(() => {
-        kitabApi.auth.redirectToLogin(window.location.href);
-      })
-      .finally(() => setLoading(false));
-  }, []);
 
   // Fetch all data
   const { data: writers } = useQuery({

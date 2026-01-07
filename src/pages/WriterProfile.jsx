@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -12,15 +12,12 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function WriterProfile() {
   const urlParams = new URLSearchParams(window.location.search);
   const writerId = urlParams.get('id');
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
-  }, []);
+  const { user } = useAuthGuard({ requireAuth: false });
 
   const { data: writer, isLoading: loadingWriter } = useQuery({
     queryKey: ['writer', writerId],

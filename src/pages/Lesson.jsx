@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { kitabApi } from "@/api/kitabApiClient";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
@@ -9,15 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, ArrowLeft, CheckCircle2, Play, FileText, Lock } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import useAuthGuard from "@/hooks/useAuthGuard";
 
 export default function Lesson() {
   const urlParams = new URLSearchParams(window.location.search);
   const lessonId = urlParams.get('id');
-  const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    kitabApi.auth.me().then(setUser).catch(() => setUser(null));
-  }, []);
+  const { user } = useAuthGuard({ requireAuth: false });
 
   const { data: lesson, isLoading: loadingLesson } = useQuery({
     queryKey: ['lesson', lessonId],
